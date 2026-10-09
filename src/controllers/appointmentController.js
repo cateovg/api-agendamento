@@ -3,7 +3,7 @@ const db = require('../config/db');
 // Criar novo agendamento com verificação de choque de horário
 const criarAgendamento = async (req, res) => {
   const { servico, data_inicio, data_fim } = req.body;
-  const usuario_id = req.usuario.id; // Extraído do JWT pelo authMiddleware
+  const usuario_id = req.usuario.id;
 
   if (!servico || !data_inicio || !data_fim) {
     return res.status(400).json({ erro: 'Serviço, data de início e data de fim são obrigatórios.' });
@@ -21,7 +21,6 @@ const criarAgendamento = async (req, res) => {
   }
 
   try {
-    // 1. Checar se existe algum agendamento ativo que se sobrepõe ao horário solicitado
     const conflitoQuery = `
       SELECT id FROM agendamentos
       WHERE status != 'cancelado'
@@ -35,7 +34,6 @@ const criarAgendamento = async (req, res) => {
       return res.status(409).json({ erro: 'Horário indisponível. Já existe um agendamento conflitante.' });
     }
 
-    // 2. Inserir o agendamento se o horário estiver livre
     const insertQuery = `
       INSERT INTO agendamentos (usuario_id, servico, data_inicio, data_fim)
       VALUES ($1, $2, $3, $4)
@@ -50,18 +48,27 @@ const criarAgendamento = async (req, res) => {
   }
 };
 
-// Listar agendamentos do usuário logado
+// Listar agendamentos do usuário com filtro opcional por intervalo
 const listarAgendamentos = async (req, res) => {
   const usuario_id = req.usuario.id;
+  const { inicio, fim } = req.query;
 
   try {
-    const query = `
+    let query = `
       SELECT id, servico, data_inicio, data_fim, status, criado_em
       FROM agendamentos
       WHERE usuario_id = $1
-      ORDER BY data_inicio ASC;
     `;
-    const result = await db.query(query, [usuario_id]);
+    const params = [usuario_id];
+
+    if (inicio && fim) {
+      params.push(new Date(inicio), new Date(fim));
+      query += ` AND data_inicio >= $2 AND data_fim <= $3`;
+    }
+
+    query += ` ORDER BY data_inicio ASC;`;
+
+    const result = await db.query(query, params);
     return res.status(200).json(result.rows);
   } catch (error) {
     console.error('Erro ao listar agendamentos:', error);
@@ -69,12 +76,7 @@ const listarAgendamentos = async (req, res) => {
   }
 };
 
-module.exports = {
-  criarAgendamento,
-  listarAgendamentos
-};
-
-// Cancelar agendamento do usuario logado
+// Cancelar agendamento do usuário logado
 const cancelarAgendamento = async (req, res) => {
   const { id } = req.params;
   const usuario_id = req.usuario.id;
