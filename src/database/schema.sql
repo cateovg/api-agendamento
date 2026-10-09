@@ -6,3 +6,13 @@ CREATE TABLE IF NOT EXISTS usuarios (
   tipo VARCHAR(20) DEFAULT 'cliente', -- 'cliente' ou 'admin'
   criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE IF NOT EXISTS agendamentos (
+  id SERIAL PRIMARY KEY,
+  usuario_id INT NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+  servico VARCHAR(100) NOT NULL,
+  data_inicio TIMESTAMP NOT NULL,
+  data_fim TIMESTAMP NOT NULL,
+  status VARCHAR(20) DEFAULT 'agendado',
+  criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
