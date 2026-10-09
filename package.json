@@ -1,7 +1,7 @@
 {
   "name": "api-agendamento",
   "version": "1.0.0",
-  "description": "",
+  "description": "API RESTful para gestão de agendamentos, serviços e usuários.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -9,5 +9,16 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs"
+  "type": "commonjs",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cateovg/api-agendamento.git"
+  },
+  "bugs": {
+    "url": "https://github.com/cateovg/api-agendamento/issues"
+  },
+  "homepage": "https://github.com/cateovg/api-agendamento#readme",
+  "dependencies": {
+    "express": "^5.3.0"
+  }
 }
