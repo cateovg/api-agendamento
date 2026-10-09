@@ -73,3 +73,34 @@ module.exports = {
   criarAgendamento,
   listarAgendamentos
 };
+
+// Cancelar agendamento do usuario logado
+const cancelarAgendamento = async (req, res) => {
+  const { id } = req.params;
+  const usuario_id = req.usuario.id;
+
+  try {
+    const query = `
+      UPDATE agendamentos
+      SET status = 'cancelado'
+      WHERE id = $1 AND usuario_id = $2 AND status != 'cancelado'
+      RETURNING id, servico, status;
+    `;
+    const result = await db.query(query, [id, usuario_id]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ erro: 'Agendamento não encontrado ou já cancelado.' });
+    }
+
+    return res.status(200).json({ mensagem: 'Agendamento cancelado com sucesso.', agendamento: result.rows[0] });
+  } catch (error) {
+    console.error('Erro ao cancelar agendamento:', error);
+    return res.status(500).json({ erro: 'Erro interno no servidor.' });
+  }
+};
+
+module.exports = {
+  criarAgendamento,
+  listarAgendamentos,
+  cancelarAgendamento
+};
